@@ -1,6 +1,6 @@
-package com.example.CRUD_Spring_mySQL.api;
+package com.example.CRUD_Spring_mySQL.controllers;
 
-import com.example.CRUD_Spring_mySQL.domain.User;
+import com.example.CRUD_Spring_mySQL.dto.UserDTO;
 import com.example.CRUD_Spring_mySQL.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -13,29 +13,30 @@ import java.util.List;
 public class UserController {
 
     private final UserService service;
+
     public UserController(UserService service) {
         this.service = service;
     }
 
     @GetMapping
-    public List<User> list() {
+    public List<UserDTO> list() {
         return service.listAll();
     }
 
     @GetMapping("/{id}")
-    public User get(@PathVariable Long id) {
+    public UserDTO get(@PathVariable Long id) {
         return service.getById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User create(@RequestBody @Valid User body) {
-        return service.create(body);
+    public UserDTO create(@RequestBody @Valid UserDTO dto) {
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody @Valid User body) {
-        return service.update(id, body);
+    public UserDTO update(@PathVariable Long id, @RequestBody @Valid UserDTO dto) {
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")

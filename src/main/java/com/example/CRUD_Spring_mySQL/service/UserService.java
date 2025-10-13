@@ -1,11 +1,13 @@
 package com.example.CRUD_Spring_mySQL.service;
 
 import com.example.CRUD_Spring_mySQL.domain.User;
+import com.example.CRUD_Spring_mySQL.dto.UserDTO;
 import com.example.CRUD_Spring_mySQL.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -17,34 +19,48 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<User> listAll() {
-        return repo.findAll();
+    public List<UserDTO> listAll() {
+        return repo.findAll().stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public User getById(Long id) {
-        return repo.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    public UserDTO getById(Long id) {
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        return toDTO(user);
     }
 
     @Transactional
-    public User create(User u) {
-        if (repo.existsByEmail(u.getEmail())) {
+    public UserDTO create(UserDTO dto) {
+        if (repo.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Email já cadastrado");
         }
-        return repo.save(u);
+        User user = toEntity(dto);
+        return toDTO(repo.save(user));
     }
 
     @Transactional
-    public User update(Long id, User data) {
-        User u = getById(id);
-        u.setName(data.getName());
-        u.setEmail(data.getEmail());
-        return repo.save(u);
+    public UserDTO update(Long id, UserDTO dto) {
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        return toDTO(repo.save(user));
     }
 
     @Transactional
     public void delete(Long id) {
         if (!repo.existsById(id)) throw new RuntimeException("Usuário não encontrado");
         repo.deleteById(id);
+    }
+
+    private UserDTO toDTO(User u) {
+        return new UserDTO(u.getId(), u.getName(), u.getEmail());
+    }
+
+    private User toEntity(UserDTO dto) {
+        return new User(dto.getId(), dto.getName(), dto.getEmail(), null, null);
     }
 }
